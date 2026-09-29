@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: tingo_db
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tingo_zalo_mini
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: tingo_redis
+    restart: always
+    ports:
+      - "6380:6379"
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: tingo_rabbitmq
+    restart: always
+    ports:
+      - "5673:5672"
+      - "15673:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+
+  api-gateway:
+    build: .
+    container_name: tingo_api_gateway
+    restart: always
+    ports:
+      - "3033:3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=user
+      - DB_PASSWORD=password
+      - DB_NAME=tingo_zalo_mini
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RABBITMQ_URL=amqp://user:password@rabbitmq:5672
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=3600s
+      # Mặc định TẮT: production dùng chung file này nên KHÔNG được ghi cứng true. Dev bật bằng
+      # ENABLE_DEBUG_AUTH=true trong file .env (đã git-ignore) để dùng đăng nhập debug.
+      - ENABLE_DEBUG_AUTH=${ENABLE_DEBUG_AUTH:-false}
+      # Thanh toán VietQR: không ghi bí mật vào file này, đặt trong .env (đã git-ignore). Cờ dev mặc định TẮT.
+      - ENABLE_DEBUG_PAYMENT=${ENABLE_DEBUG_PAYMENT:-false}
+      - VIETQR_API_BASE=${VIETQR_API_BASE:-}
+      - VIETQR_BASIC_AUTH=${VIETQR_BASIC_AUTH:-}
+      - VIETQR_TOKEN_PATH=${VIETQR_TOKEN_PATH:-}
+      - VIETQR_CALLBACK_USER=${VIETQR_CALLBACK_USER:-}
+      - VIETQR_CALLBACK_PASS=${VIETQR_CALLBACK_PASS:-}
+      - VIETQR_CALLBACK_JWT_SECRET=${VIETQR_CALLBACK_JWT_SECRET:-}
+      - VIETQR_BANK_CODE=${VIETQR_BANK_CODE:-}
+      - VIETQR_BANK_BIN=${VIETQR_BANK_BIN:-}
+      - VIETQR_BANK_ACCOUNT=${VIETQR_BANK_ACCOUNT:-}
+      - VIETQR_ACCOUNT_NAME=${VIETQR_ACCOUNT_NAME:-}
+      # Ảnh báo hỏng thiết bị: có đủ 3 biến này thì lưu lên Supabase Storage (bền vững), không thì
+      # tự lưu tạm ra ổ đĩa (xem volumes bên dưới, chỉ để dev).
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+      - SUPABASE_BUCKET=${SUPABASE_BUCKET:-device-issues}
+      # Zalo Mini App — xác thực số điện thoại Zalo khi đăng nhập
+      - ZALO_APP_ID=${ZALO_APP_ID:-}
+      - ZALO_APP_SECRET=${ZALO_APP_SECRET:-}
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+
+volumes:
+  postgres_data:

@@ -1,0 +1,950 @@
+openapi: 3.0.0
+info:
+  title: Tingo Pay API Gateway
+  description: OpenAPI Specification for Tingo Pay API Gateway Mini App
+  version: 1.0.0
+servers:
+  - url: https://tingo-api-gateway.vietqr.vn
+    description: Production Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        phoneZalo:
+          type: string
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, PENDING]
+        roles:
+          type: array
+          items:
+            type: string
+            enum: [OWNER, STAFF, GUEST]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Shop:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        avatarUrl:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        orderTime:
+          type: string
+          format: date-time
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        totalAmount:
+          type: number
+        discountAmount:
+          type: number
+        payAmount:
+          type: number
+        status:
+          type: string
+          enum: [INIT, PROCESSING, SHIPPING, DELIVERED, COMPLETED, CANCELLED]
+        receiverName:
+          type: string
+        receiverPhone:
+          type: string
+        receiverAddress:
+          type: string
+        notes:
+          type: string
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+          enum: [SPEAKER, PAY_BOX, QR_BOX]
+        model:
+          type: string
+        price:
+          type: number
+        status:
+          type: string
+          enum: [IN_STOCK, OUT_OF_STOCK]
+        imageUrls:
+          type: array
+          items:
+            type: string
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        time:
+          type: string
+          format: date-time
+        amount:
+          type: number
+        content:
+          type: string
+        refNumber:
+          type: string
+        type:
+          type: string
+          enum: [DEBIT, CREDIT]
+        accountNumber:
+          type: string
+        status:
+          type: string
+          enum: [SUCCESS, FAILED, PENDING]
+        refundStatus:
+          type: string
+          enum: [NONE, PARTIAL, FULL]
+
+    BankAccount:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        bankBin:
+          type: string
+        bankCode:
+          type: string
+        accountNumber:
+          type: string
+        accountHolder:
+          type: string
+        phone:
+          type: string
+        citizenId:
+          type: string
+        status:
+          type: string
+          enum: [LINKED, UNLINKED]
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        model:
+          type: string
+        serial:
+          type: string
+        linkStatus:
+          type: string
+          enum: [LINKED, UNLINKED]
+        opStatus:
+          type: string
+          enum: [ONLINE, OFFLINE]
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName:
+                  type: string
+                phoneZalo:
+                  type: string
+                role:
+                  $ref: '#/components/schemas/User/properties/roles/items'
+      responses:
+        '201':
+          description: User registered successfully or returned roles for selection
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      access_token:
+                        type: string
+                      user:
+                        type: object
+                        properties:
+                          id: { type: string, format: uuid }
+                          fullName: { type: string }
+                          phone: { type: string }
+                          role: { type: string }
+                          status: { type: string }
+                          last_login_at: { type: string, format: date-time }
+                      welcome_message:
+                        type: string
+                  - type: object
+                    properties:
+                      success: { type: boolean }
+                      id: { type: string, format: uuid }
+                      phone: { type: string }
+                      roles:
+                        type: array
+                        items: { type: string }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with phone number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phoneZalo:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      fullName: { type: string }
+                      phone: { type: string }
+                      role: { type: string }
+                      status: { type: string }
+                      last_login_at: { type: string, format: date-time }
+
+  /shops:
+    get:
+      tags: [Shops]
+      summary: Get all shops
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of shops
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Shop'
+    post:
+      tags: [Shops]
+      summary: Create a new shop
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Shop'
+      responses:
+        '201':
+          description: Shop created
+
+  /shops/dashboard:
+    get:
+      tags: [Shops]
+      summary: Get user shops dashboard stats
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of shops with quick stats
+
+  /shops/{id}:
+    get:
+      tags: [Shops]
+      summary: Get a shop by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shop details
+    delete:
+      tags: [Shops]
+      summary: Delete a shop
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shop deleted
+    put:
+      tags: [Shops]
+      summary: Update a shop
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                avatarUrl:
+                  type: string
+      responses:
+        '200':
+          description: Shop updated
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shop deleted
+
+  /shops/{id}/staff/{userId}:
+    put:
+      tags: [Shops]
+      summary: Add staff to shop
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [SHOP_MANAGER, SHOP_STAFF]
+      responses:
+        '200':
+          description: Staff added
+    delete:
+      tags: [Shops]
+      summary: Remove staff from shop
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Staff removed
+
+  /shops/{id}/stats:
+    get:
+      tags: [Shops]
+      summary: Get advanced shop statistics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: interval
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month]
+      responses:
+        '200':
+          description: Shop statistics data
+
+  /shops/{id}/export:
+    get:
+      tags: [Shops]
+      summary: Export shop transactions to CSV
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: CSV file string
+
+  /orders:
+    get:
+      tags: [Orders]
+      summary: Get all orders
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: customerId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 25
+      responses:
+        '200':
+          description: List of orders with pagination
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+                  total:
+                    type: integer
+    post:
+      tags: [Orders]
+      summary: Create a new order
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+      responses:
+        '201':
+          description: Order created
+
+  /orders/{id}:
+    get:
+      tags: [Orders]
+      summary: Get order by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order details
+
+  /orders/{id}/status:
+    put:
+      tags: [Orders]
+      summary: Update order status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/Order/properties/status'
+      responses:
+        '200':
+          description: Status updated
+
+  /orders/{id}/cancel:
+    delete:
+      tags: [Orders]
+      summary: Cancel an order
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order cancelled
+
+  /products:
+    get:
+      tags: [Products]
+      summary: Get all products
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+
+  /products/{id}:
+    get:
+      tags: [Products]
+      summary: Get product by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product details
+
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: Get all transactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: shopId
+          in: query
+          schema:
+            type: string
+        - name: deviceId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 25
+      responses:
+        '200':
+          description: List of transactions with pagination
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  total:
+                    type: integer
+    post:
+      tags: [Transactions]
+      summary: Create a new transaction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '201':
+          description: Transaction created
+
+  /transactions/{id}:
+    get:
+      tags: [Transactions]
+      summary: Get transaction by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction details
+
+  /transactions/{id}/status:
+    put:
+      tags: [Transactions]
+      summary: Update transaction status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/Transaction/properties/status'
+      responses:
+        '200':
+          description: Status updated
+
+  /transactions/{id}/refund:
+    put:
+      tags: [Transactions]
+      summary: Update refund status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/Transaction/properties/refundStatus'
+      responses:
+        '200':
+          description: Refund status updated
+
+  /bank-accounts:
+    get:
+      tags: [Bank Accounts]
+      summary: Get all bank accounts
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: shopId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of bank accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BankAccount'
+    post:
+      tags: [Bank Accounts]
+      summary: Create a new bank account
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BankAccount'
+      responses:
+        '201':
+          description: Bank account created
+
+  /bank-accounts/{id}:
+    get:
+      tags: [Bank Accounts]
+      summary: Get bank account by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bank account details
+    delete:
+      tags: [Bank Accounts]
+      summary: Delete a bank account
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bank account deleted
+
+  /bank-accounts/{id}/link/{shopId}:
+    put:
+      tags: [Bank Accounts]
+      summary: Link bank account to shop
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: shopId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Bank account linked
+
+  /devices:
+    get:
+      tags: [Devices]
+      summary: Get all devices
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: shopId
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+    post:
+      tags: [Devices]
+      summary: Create a new device
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Device'
+      responses:
+        '201':
+          description: Device created
+
+  /devices/{id}:
+    get:
+      tags: [Devices]
+      summary: Get device by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device details
+    delete:
+      tags: [Devices]
+      summary: Delete a device
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device deleted
+
+  /devices/{id}/link/{shopId}:
+    put:
+      tags: [Devices]
+      summary: Link device to shop
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: shopId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Device linked
+
+  /devices/{id}/status:
+    put:
+      tags: [Devices]
+      summary: Update device status
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  $ref: '#/components/schemas/Device/properties/opStatus'
+      responses:
+        '200':
+          description: Status updated
