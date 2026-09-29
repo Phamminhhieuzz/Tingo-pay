@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import logo from "@/static/logo.png";
 import { useTranslation } from "@/i18n";
 import LanguageSwitch from "@/components/language-switch";
+import ThemeSwitch from "@/components/theme-switch";
 
 const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,8 +40,9 @@ const WelcomePage: React.FC = () => {
     <Page className="flex flex-col bg-white dark:bg-gray-800">
       {/* Hero Section */}
       <Box className="relative bg-tingo-red px-6 pt-16 pb-12 flex flex-col items-center rounded-b-[48px]">
-        {/* Đặt ở góc trên-phải màn đầu tiên để người xem demo đổi ngôn ngữ được ngay, chưa cần đăng nhập */}
-        <Box className="absolute top-4 right-4">
+        {/* Đặt ở góc trên-phải màn đầu tiên để người xem demo đổi ngôn ngữ/giao diện được ngay, chưa cần đăng nhập */}
+        <Box className="absolute top-4 right-4 flex items-center space-x-2">
+          <ThemeSwitch />
           <LanguageSwitch />
         </Box>
         <Box className="bg-white dark:bg-gray-800 p-3 rounded-2xl shadow-lg mb-6">

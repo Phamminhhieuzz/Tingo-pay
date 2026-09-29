@@ -14,6 +14,7 @@ import { loginWithZalo, loginWithDebugToken, registerUser } from "@/utils/auth";
 import { useSnackbar, Input } from "zmp-ui";
 import { useTranslation } from "@/i18n";
 import LanguageSwitch from "@/components/language-switch";
+import ThemeSwitch from "@/components/theme-switch";
 
 const RoleSelectionPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
@@ -146,7 +147,10 @@ const RoleSelectionPage: React.FC = () => {
               <Text size="small" className="text-tingo-red font-bold">{t("roleSelection.brandTag")}</Text>
             </Box>
           </Box>
-          <LanguageSwitch />
+          <Box className="flex items-center space-x-2">
+            <ThemeSwitch />
+            <LanguageSwitch />
+          </Box>
         </Box>
         <Text.Title size="xLarge" className="font-bold mb-2">{t("roleSelection.title")}</Text.Title>
         <Text className="text-gray-500 dark:text-gray-400">
