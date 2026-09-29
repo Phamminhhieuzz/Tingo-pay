@@ -1,0 +1,17 @@
+.agent
+.agents
+*.md
+.git
+.DS_Store
+node_modules
+src
+vite.config.mts
+tsconfig.json
+tailwind.config.js
+postcss.config.js
+package-lock.json
+package.json
+zmp-cli.json
+openapi.yaml
+inline.js
+logo-tingo-*.png
