@@ -98,6 +98,8 @@ const en: TranslationDict = {
 
   dashboard: {
     greetingGuest: "Hello!",
+    greetingUser: "Hello",
+    heroSubtitle: "Ready to get paid today?",
     myShops: "My Shops",
     createShop: "Create Shop",
     myDevices: "Speaker Devices",

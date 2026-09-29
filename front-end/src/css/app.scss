@@ -2,6 +2,10 @@
   --tingo-bg: #FDFDFD;
 }
 
+body {
+  font-family: "Be Vietnam Pro", -apple-system, system-ui, sans-serif;
+}
+
 body[zaui-theme="dark"] {
   --tingo-bg: #111318;
   // zmp-ui tự đổi màu các component của nó, nhưng nền <body> không tự đổi khi trang chưa kịp
@@ -43,6 +47,41 @@ body[zaui-theme="dark"] {
 @media (prefers-reduced-motion: reduce) {
   .fade-in-up {
     animation: none;
+  }
+}
+
+// Vòng sóng âm lan toả — điểm nhấn chuyển động duy nhất của app, gợi liên tưởng tới việc
+// loa Tingo phát ra âm thanh khi quét mã/nhận tiền. Dùng ở nút Quét QR + hero Dashboard.
+@keyframes sound-ripple {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.sound-ripple::before,
+.sound-ripple::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #FF6B4A, #FFB238);
+  animation: sound-ripple 2.4s ease-out infinite;
+}
+
+.sound-ripple::after {
+  animation-delay: 1.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-ripple::before,
+  .sound-ripple::after {
+    animation: none;
+    display: none;
   }
 }
 
