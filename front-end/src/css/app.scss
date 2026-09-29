@@ -1,0 +1,54 @@
+:root {
+  --tingo-bg: #FDFDFD;
+}
+
+body[zaui-theme="dark"] {
+  --tingo-bg: #111318;
+  // zmp-ui tự đổi màu các component của nó, nhưng nền <body> không tự đổi khi trang chưa kịp
+  // mount xong "bg-tingo-bg" — đặt luôn ở đây để tránh chớp trắng khi chuyển trang / tải lần đầu
+  background-color: var(--tingo-bg);
+  color: #E5E7EB;
+}
+
+.page {
+  padding: 16px 16px 96px 16px;
+}
+
+.section-container {
+  padding: 16px;
+  background: #ffffff;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.zaui-list-item {
+  cursor: pointer;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fade-in-up {
+  animation: fade-in-up 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in-up {
+    animation: none;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

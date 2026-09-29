@@ -1,0 +1,29 @@
+{
+  "app": {
+    "title": "Tingo Pay",
+    "headerTitle": "Tingo Pay",
+    "headerColor": "#DC4028",
+    "textColor": {
+      "light": "white",
+      "dark": "white"
+    },
+    "statusBar": "transparent",
+    "actionBarHidden": false,
+    "hideIOSSafeAreaBottom": true,
+    "hideAndroidBottomNavigationBar": false
+  },
+  "app_id": "4308874633773223654",
+  "permissions": [
+    "user.userPhoneNumber",
+    "user.userDisplayName",
+    "user.userAvatar"
+  ],
+  "listCSS": [],
+  "listSyncJS": [
+    "inline.js"
+  ],
+  "listAsyncJS": [],
+  "pages": [
+    "pages/index"
+  ]
+}
