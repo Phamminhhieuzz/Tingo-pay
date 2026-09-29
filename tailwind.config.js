@@ -13,6 +13,10 @@ module.exports = {
           // Đọc từ biến CSS để tự đổi theo dark mode (định nghĩa ở css/app.scss), không cần
           // sửa "bg-tingo-bg" ở từng trang khi thêm dark mode
           bg: "var(--tingo-bg)",
+          // Gradient "sóng âm" — lấy cảm hứng từ loa Tingo phát âm thanh khi nhận tiền, chỉ
+          // dùng ở 1-2 điểm nhấn chính (nút Quét QR, hero Dashboard), không rải khắp app
+          sunsetFrom: "#FF6B4A",
+          sunsetTo: "#FFB238",
         },
         primary: "#DC4028",
         secondary: "#0F4EA7",
@@ -26,6 +30,7 @@ module.exports = {
         mono: ["Roboto Mono", "monospace"],
         // Chỉ dùng cho chữ thương hiệu "Tingo Pay" (logo chữ), không dùng cho nội dung thường
         brand: ["Playfair Display", "serif"],
+        sans: ["Be Vietnam Pro", "-apple-system", "system-ui", "sans-serif"],
       },
     },
   },

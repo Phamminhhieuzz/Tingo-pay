@@ -8,10 +8,11 @@ import React from "react";
 import { Box, Page, Text, Button, Icon } from "zmp-ui";
 import { useNavigate } from "react-router-dom";
 import { useAtomValue } from "jotai";
-import { 
-  userRoleAtom, 
-  shopsAtom, 
-  devicesAtom, 
+import {
+  userRoleAtom,
+  currentUserAtom,
+  shopsAtom,
+  devicesAtom,
   productsAtom,
   isLoadingShopsAtom,
   isLoadingDevicesAtom,
@@ -36,6 +37,7 @@ const DashboardPage: React.FC = () => {
   // Mặc định về GUEST nếu chưa xác định vai trò, để tránh hiển thị nhầm
   // các khu vực chỉ dành cho tài khoản đã đăng nhập/phân quyền
   const role = useAtomValue(userRoleAtom) || "GUEST";
+  const currentUser = useAtomValue(currentUserAtom);
   const shops = useAtomValue(shopsAtom);
   const devices = useAtomValue(devicesAtom);
   const products = useAtomValue(productsAtom);
@@ -49,7 +51,17 @@ const DashboardPage: React.FC = () => {
   return (
     <Page className="flex flex-col bg-tingo-bg pb-24">
       <DashboardHeader role={role} />
-      
+
+      {/* Hero chào mừng — điểm nhấn màu sắc duy nhất của Dashboard, vòng sóng âm mờ phía sau
+          gợi liên tưởng loa Tingo phát âm thanh khi nhận tiền */}
+      <Box className="relative overflow-hidden bg-gradient-to-br from-[#FF6B4A] to-tingo-sunsetTo px-5 py-6 mx-4 mt-4 rounded-3xl">
+        <Box className="sound-ripple absolute right-4 top-1/2 -translate-y-1/2 w-16 h-16 opacity-40" />
+        <Text className="text-white/90 text-sm font-medium mb-0.5">
+          {currentUser?.fullName ? `${t("dashboard.greetingUser")}, ${currentUser.fullName}` : t("dashboard.greetingGuest")}
+        </Text>
+        <Text className="text-white font-bold text-xl">{t("dashboard.heroSubtitle")}</Text>
+      </Box>
+
       <QuickAccess role={role} />
 
       <Box className="flex-1 px-4 space-y-8">

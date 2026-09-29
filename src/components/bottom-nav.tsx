@@ -75,8 +75,10 @@ const BottomNav: React.FC<BottomNavProps> = ({ role }) => {
             className={`flex flex-col items-center space-y-1 relative transition-transform duration-150 active:scale-95 ${tab.isSpecial ? "-mt-10" : ""}`}
           >
             {tab.isSpecial ? (
-              <Box className="bg-tingo-red p-1 rounded-full shadow-float border-4 border-white">
-                <img src={iconScanQr} alt="Scan QR" className="w-14 h-14 rounded-full" />
+              <Box className="sound-ripple relative">
+                <Box className="relative z-10 bg-gradient-to-br from-[#FF6B4A] to-tingo-red p-1 rounded-full shadow-float border-4 border-white">
+                  <img src={iconScanQr} alt="Scan QR" className="w-14 h-14 rounded-full" />
+                </Box>
               </Box>
             ) : (
               <>

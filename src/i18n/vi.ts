@@ -97,6 +97,8 @@ const vi = {
 
   dashboard: {
     greetingGuest: "Xin chào!",
+    greetingUser: "Xin chào",
+    heroSubtitle: "Sẵn sàng nhận tiền hôm nay chưa?",
     myShops: "Cửa hàng của tôi",
     createShop: "Tạo cửa hàng",
     myDevices: "Thiết bị loa",
